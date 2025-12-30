@@ -8,9 +8,9 @@ Streamlit automatically manages the state of input widgets, so values persist an
 import streamlit as st
 from calculator_backend import add, subtract, multiply, divide
 
-st.title("Copilot Calculator — Streamlit Application")
-st.header("Copilot Calculator")
-st.write("This is a simple Streamlit application.")
+st.title("2 Digit Calculator")
+st.header("2 Digit Calculator")
+st.write("This is a simple calculator application.")
 
 # Streamlit's number_input widgets automatically store and update their values in the app's state.
 num1 = st.number_input("Enter first number", value=0.0, format="%f")
