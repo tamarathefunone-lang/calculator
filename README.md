@@ -1,6 +1,6 @@
-# Copilot Calculator
+# Calculator
 
-Copilot Calculator is a simple web application for performing basic arithmetic operations: addition, subtraction, multiplication, and division. Built with Python and Streamlit, it provides a fast and interactive user experience.
+ Calculator is a simple web application for performing basic arithmetic operations: addition, subtraction, multiplication, and division. Built with Python and Streamlit, it provides a fast and interactive user experience.
 
 ## Features
 - Add, subtract, multiply, or divide two numbers (supports decimals)
