@@ -7,6 +7,9 @@ Build a basic calculator app using:
 ## Environment Setup
 
 1. **Open terminal**
+  ```
+  cd /Users/tammu162/copilot-projects
+   ```
 2. **Create virtual environment**
    ```bash
    python3 -m venv dev

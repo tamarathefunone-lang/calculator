@@ -6,8 +6,9 @@ Streamlit automatically manages the state of input widgets, so values persist an
 """
 
 import streamlit as st
+from calculator_backend import add, subtract, multiply, divide
 
-st.title("Welcome to My Streamlit App")
+st.title("Copilot Calculator — Streamlit Application")
 st.header("Copilot Calculator")
 st.write("This is a simple Streamlit application.")
 
@@ -25,25 +26,28 @@ operation = st.sidebar.selectbox(
 if operation == "Divide" and num2 == 0.0:
     st.warning("Cannot divide by zero. Please enter a non-zero second number.")
 
+# When the calculate button is pressed
 if st.button("Calculate"):
     result = None
     symbol = ""
-    if operation == "Add":
-        result = num1 + num2
-        symbol = "+"
-    elif operation == "Subtract":
-        result = num1 - num2
-        symbol = "-"
-    elif operation == "Multiply":
-        result = num1 * num2
-        symbol = "×"
-    elif operation == "Divide":
-        symbol = "÷"
-        if num2 == 0:
-            st.error("Cannot divide by zero.")
-        else:
-            result = num1 / num2
+    # Perform the calculation based on the selected operation
+    try:
+        if operation == "Add":
+            result = add(num1, num2)
+            symbol = "+"
+        elif operation == "Subtract":
+            result = subtract(num1, num2)
+            symbol = "-"
+        elif operation == "Multiply":
+            result = multiply(num1, num2)
+            symbol = "×"
+        elif operation == "Divide":
+            symbol = "÷"
+            result = divide(num1, num2)
+    except ValueError as e:
+        st.error(str(e))
 
+    # If the result is successfully calculated, display it
     if result is not None:
         # Show a Bootstrap-like success box
         st.success(f"{num1:g} {symbol} {num2:g} = {result:g}")
