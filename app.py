@@ -12,34 +12,45 @@ from calculator_backend import add, subtract, multiply, divide
 st.markdown(
     """
     <style>
-    .main {
-        background-color: #FFFBCC;
+    html, body, .main {
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+        background-color: #FFF8DC;
         font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+        color: black !important;
+    }
+    .stApp {
+        overflow: hidden !important;
     }
     .stButton>button {
-        background-color: #FFB347;
-        color: white;
-        font-size: 72px;
+        background-color: unset !important;
+        color: black !important;
+        font-size: 48px;
         border-radius: 16px;
-        height: 1.125em;
+        height: 0.9em;
         width: 100%;
         margin: 8px 0;
+    }
+    #operation-row + div button,
+    button[data-testid="baseButton-secondary"] {
+        background-color: #FFF9C4 !important;
+        color: black !important;
+        border-radius: 16px !important;
     }
     .equation-box {
         background-color: #FFF8DC;
         border-radius: 18px;
-        padding: 36px;
-        margin-bottom: 36px;
+        padding: 24px;
+        margin-bottom: 24px;
         text-align: center;
         border: 2px solid #FFD700;
+        color: black !important;
     }
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-      -webkit-appearance: none;
-      margin: 0; 
-    }
-    input[type=number] {
-      -moz-appearance: textfield;
+    /* Responsive font size for equation/result */
+    @media (max-width: 900px) {
+        .equation-box { font-size: 18px !important; }
+        .stButton>button { font-size: 32px !important; }
     }
     </style>
     """,
@@ -61,7 +72,7 @@ selected_symbol = op_map.get(st.session_state['selected_op'], "?")
 
 
 # Number input fields (restricted to 2 digits, only numbers allowed)
-col1, col2 = st.columns(2)
+#col1, col2 = st.columns(2)
 num1_warning = num2_warning = False
 # Track last valid values
 if 'last_valid_num1' not in st.session_state:
@@ -69,33 +80,36 @@ if 'last_valid_num1' not in st.session_state:
 if 'last_valid_num2' not in st.session_state:
     st.session_state['last_valid_num2'] = '0'
 
-with col1:
-    num1_input = st.text_input("First Number", value=st.session_state['last_valid_num1'], key=f"num1_input_{st.session_state['reset_counter']}", max_chars=2)
-    if num1_input.isdigit() and len(num1_input) <= 2:
-        st.session_state['last_valid_num1'] = num1_input
-        num1 = int(num1_input) if num1_input else 0
-    else:
-        num1_warning = True
-        num1 = int(st.session_state['last_valid_num1']) if st.session_state['last_valid_num1'] else 0
-    st.session_state['num1'] = num1
-    st.caption("Only 2 digits allowed (0-99)")
-with col2:
-    num2_input = st.text_input("Second Number", value=st.session_state['last_valid_num2'], key=f"num2_input_{st.session_state['reset_counter']}", max_chars=2)
-    if num2_input.isdigit() and len(num2_input) <= 2:
-        st.session_state['last_valid_num2'] = num2_input
-        num2 = int(num2_input) if num2_input else 0
-    else:
-        num2_warning = True
-        num2 = int(st.session_state['last_valid_num2']) if st.session_state['last_valid_num2'] else 0
-    st.session_state['num2'] = num2
-    st.caption("Only 2 digits allowed (0-99)")
-if num1_warning:
-    st.warning("First number must be 0-99 and only 2 digits.", icon="⚠️")
-if num2_warning:
-    st.warning("Second number must be 0-99 and only 2 digits.", icon="⚠️")
+# Label and read-only display for the first number (keeps in sync with keypad)
+st.markdown('<div style="font-size:200%; font-weight:400; color:black;">First Number</div>', unsafe_allow_html=True)
+
+rows = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+cols = st.columns(len(rows))
+for i, label in enumerate(rows):
+    with cols[i]:
+        if st.button(label, key=f"num1_btn_{label}_{st.session_state['reset_counter']}", use_container_width=True):
+            cur = st.session_state.get('last_valid_num1', '0')
+            # Digit pressed
+            if label.isdigit():
+                # Replace leading '0' or append if less than 2 digits
+                if cur == '0':
+                    new = label
+                else:
+                    new = cur + label if len(cur) < 2 else cur
+            elif label == '⌫':  # backspace
+                new = cur[:-1] if len(cur) > 1 else '0'
+            else:  # 'C' clear
+                new = '0'
+            st.session_state['last_valid_num1'] = new
+
+# Provide a string variable compatible with the rest of the code
+num1 = int(st.session_state.get('last_valid_num1', 0))
 
 
 # Operation buttons in a single row, all same size and full width
+st.markdown('<div style="font-size:200%; font-weight:400;">Operations</div>', unsafe_allow_html=True)
+
 op_cols = st.columns(4)
 ops = ['add', 'sub', 'mul', 'div']
 for i, op in enumerate(ops):
@@ -104,17 +118,34 @@ for i, op in enumerate(ops):
             st.session_state['selected_op'] = op
 selected_symbol = op_map.get(st.session_state['selected_op'], "?")
 
+# Label and read-only display for the second number (keeps in sync with keypad)
+st.markdown('<div style="font-size:200%; font-weight:400; color:black !important;">Second Number</div>', unsafe_allow_html=True)
 
 
-# Enter and Reset buttons in a row
-action_col1, action_col2 = st.columns(2)
-with action_col1:
-    enter_pressed = st.button("Enter", key="enter_btn", use_container_width=True)
+rows = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
+cols = st.columns(len(rows))
+for i, label in enumerate(rows):
+    with cols[i]:
+        if st.button(label, key=f"num2_btn_{label}_{st.session_state['reset_counter']}", use_container_width=True):
+            cur = st.session_state.get('last_valid_num2', '0')
+            # Digit pressed
+            if label.isdigit():
+                # Replace leading '0' or append if less than 2 digits
+                if cur == '0':
+                    new = label
+                else:
+                    new = cur + label if len(cur) < 2 else cur
+            elif label == '⌫':  # backspace
+                new = cur[:-1] if len(cur) > 1 else '0'
+            else:  # 'C' clear
+                new = '0'
+            st.session_state['last_valid_num2'] = new
 
+# Provide a string variable compatible with the rest of the code
+num2 = int(st.session_state['last_valid_num2'])
 
-with action_col2:
-    reset_pressed = st.button("Reset", key="reset_btn", use_container_width=True)
+enter_pressed = st.button("Enter", key="enter_btn", use_container_width=True)
 
 # Calculation logic
 if enter_pressed:
@@ -144,24 +175,14 @@ if enter_pressed:
         st.session_state['result'] = ""
 
 
-# Reset logic: only reset relevant keys
-if reset_pressed:
-    for key in ['selected_op', 'result', 'num1', 'num2']:
-        if key in st.session_state:
-            del st.session_state[key]
-    st.session_state['last_valid_num1'] = '0'
-    st.session_state['last_valid_num2'] = '0'
-    st.session_state['reset_counter'] += 1
-    st.rerun()
-
 # Single equation/result box above everything but the title
-equation_str = f"{st.session_state['num1']} {selected_symbol} {st.session_state['num2']}"
+equation_str = f"{st.session_state['last_valid_num1']} {selected_symbol} {st.session_state['last_valid_num2']}"
 display_str = st.session_state['result'] if st.session_state['result'] else equation_str
 st.markdown(
     f"""
     <div style="
         width:100%;
-        background-color:#FFF9C4;
+        background-color:#FFB6C1;
         padding:16px;
         border-radius:10px;
         text-align:center;
@@ -174,3 +195,15 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+reset_pressed = st.button("Reset", key="reset_btn", use_container_width=True)
+
+# Reset logic: only reset relevant keys
+if reset_pressed:
+    for key in ['selected_op', 'result', 'num1', 'num2']:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.session_state['last_valid_num1'] = '0'
+    st.session_state['last_valid_num2'] = '0'
+    st.session_state['reset_counter'] += 1
+    st.rerun()
